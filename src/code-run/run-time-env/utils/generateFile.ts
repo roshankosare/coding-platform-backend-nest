@@ -5,21 +5,27 @@ import { v4 as uuid } from 'uuid';
 
 export const generateFile = (language: string, code: string): string | null => {
   let ext: string;
+  let sourceFolder:string;
   switch (language) {
     case 'cpp':
       ext = 'cpp';
+      sourceFolder = "cpp"
       break;
     case 'c':
       ext = 'c';
+      sourceFolder = "c"
       break;
     case 'java':
       ext = 'java';
+      sourceFolder = "java"
       break;
     case 'pythone':
       ext = 'py';
+      sourceFolder = "pythone"
       break;
     case 'node':
       ext = 'js';
+      sourceFolder = "node"
       break;
   }
 
