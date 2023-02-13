@@ -1,0 +1,7 @@
+# Get the GCC preinstalled image from Docker Hub
+FROM node:alpine
+
+# Copy the current folder which contains C++ source code to the Docker image under /usr/src
+COPY . .
+
+CMD [ "node","main.js" ]

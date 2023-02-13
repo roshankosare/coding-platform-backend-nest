@@ -1,58 +1,48 @@
 import { spawn } from 'child_process';
-import { RunnerResult } from '../runner-result.type';
 import { RunnerBaseClass } from './RunnerBaseClass';
-import * as path from 'path';
-import * as fs from 'fs';
-import { PathAndTool } from './types';
 import { join } from 'path';
 
 export class CppRunner extends RunnerBaseClass {
-  outputFilepath: string;
-  static dirCompilerOutput: string;
+  BuildContainerAndGetDockerContainerName(): Promise<string> {
+    let error: string;
 
-  async getRunFilePathAndTool(filepath: string): Promise<PathAndTool | null> {
-    CppRunner.dirCompilerOutput = join(process.cwd(), 'executables');
+    const wrkdir = join(process.cwd(), 'source-codes', 'cpp');
+    const container = 'cppruntime';
 
-    try {
-      const result = await this.compile(filepath);
-      return { exeFilepath: result.compiledFilePath };
-    } catch (e) {
-      return { error: e };
-    }
-  }
-
-  async compile(filepath: string): Promise<{ compiledFilePath: string }> {
-    if (!fs.existsSync(CppRunner.dirCompilerOutput))
-      fs.mkdirSync(CppRunner.dirCompilerOutput);
-
-    this.outputFilepath = path.basename(filepath).split('.')[0];
-    this.outputFilepath = `${this.outputFilepath}.out`;
-    this.outputFilepath = join(
-      CppRunner.dirCompilerOutput,
-      this.outputFilepath,
-    );
     return new Promise((resolve, reject) => {
-      const compiler = spawn('g++', [filepath, '-o', this.outputFilepath]);
-      if (compiler) {
-        compiler.stderr.on('data', (data) => {
-          const error = data.toString();
-          reject(error);
-        });
+      const buildContainer = spawn('docker', [
+        'build',
+        '-t',
+        container,
+        wrkdir,
+      ]);
 
-        compiler.on('error', (e) => {
-          const error = e.toString();
-          reject(error);
-        });
+      buildContainer.stdout.on("error", (data) => {
+        const output = data.toString();
+        console.log(error);
+        console.log(output)
+      });
+      buildContainer.stderr.on('data', (data) => {
+        
+        const output = data.toString();
+        console.log(output)
+        error = output;
+      });
 
-        compiler.on('exit', (code) => {
-          if (code === 0) 
-          resolve({ compiledFilePath: this.outputFilepath });
-        });
-      }
+      buildContainer.on('error', (error) => {
+        const output = error.toString();
+        console.log(error)
+      });
+
+      buildContainer.on('exit', async (code) => {
+        // clearTimeout(timeout);
+        if (code === 0) {
+          resolve(container);
+        }
+        if (code === 1) {
+          reject(error);
+        }
+      });
     });
-
-    // if (isCompiled)
-    //   return { compiledFilePath: this.outputFilepath, error: null };
-    // if (error) return { compiledFilePath: null, error: error };
   }
 }

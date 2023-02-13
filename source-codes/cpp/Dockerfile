@@ -1,10 +1,15 @@
-FROM alpine as build-env
-RUN apk add --no-cache build-base
-WORKDIR /app
-COPY . .
-# Compile the binaries
-RUN g++ main.cpp -o main
-FROM alpine
-COPY --from=build-env /app/hello /app/hello
-WORKDIR /app
-CMD ["/app/hello"] 
+FROM frolvlad/alpine-gcc
+
+RUN apk add --no-cache g++
+
+# Copy the current folder which contains C++ source code to the Docker image under /usr/src
+COPY . /usr/src/code
+
+# Specify the working directory
+WORKDIR /usr/src/code
+
+# Use GCC to compile the Test.cpp source file
+RUN g++ -o Test main.cpp
+
+# Run the program output from the previous step
+CMD ["./Test"]

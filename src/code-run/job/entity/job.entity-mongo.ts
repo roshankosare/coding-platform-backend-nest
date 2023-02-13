@@ -31,8 +31,6 @@ export class Jobs implements Job {
   @Prop()
   errors: string;
 
-  @Prop()
-  filepath: string;
 
   @Prop()
   startedAt: Date;

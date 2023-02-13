@@ -1,9 +1,9 @@
 import * as fs from 'fs';
-import * as path from 'path';
-import { join } from 'path';
-import { v4 as uuid } from 'uuid';
 
-export const generateFile = (language: string, code: string): string | null => {
+import { join } from 'path';
+
+
+export const generateFile = (language: string, code: string): void => {
   let ext: string;
   let sourceFolder:string;
   switch (language) {
@@ -29,13 +29,13 @@ export const generateFile = (language: string, code: string): string | null => {
       break;
   }
 
-  let filename: string = uuid();
-  filename = `${filename}.${ext}`;
-  const folderPath = join(process.cwd(), 'source-codes');
+  let filename: string ;
+  filename = `main.${ext}`;
+  const folderPath = join(process.cwd(), 'source-codes',sourceFolder);
 
   let filepath = join(folderPath, filename);
 
   fs.writeFileSync(filepath, code);
-  return filepath;
+  return ;
   // if (!filepath) return null;
 };

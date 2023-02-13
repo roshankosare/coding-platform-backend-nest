@@ -6,6 +6,8 @@ import { JobModule } from './job/job.module';
 import { BullModule } from '@nestjs/bull';
 import { JobConsumer } from './jobQueue/Job.consumer';
 import { CodeRunValidationService } from './run-code-validation.service';
+import { RunTimeEnvTest } from './run-time-env/run-time-env-test.service';
+import { RunTimeEnvModule } from './run-time-env/run-time-env.module';
 
 @Module({
   imports: [
@@ -13,9 +15,11 @@ import { CodeRunValidationService } from './run-code-validation.service';
     BullModule.registerQueue({
       name: 'jobs',
     }),
+    RunTimeEnvModule
   ],
   controllers: [CodeRunController],
   providers: [CodeRunService, RunTimeEnv,JobConsumer,
-  CodeRunValidationService],
+  CodeRunValidationService,],
+ 
 })
 export class CodeRunModule {}

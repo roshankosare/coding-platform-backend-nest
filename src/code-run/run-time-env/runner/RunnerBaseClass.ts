@@ -1,134 +1,83 @@
 import { spawn } from 'child_process';
+
 import { RunnerResult } from '../runner-result.type';
-import { PathAndTool } from './types';
-import * as fs from 'fs';
 
 export abstract class RunnerBaseClass {
-  abstract getRunFilePathAndTool(filepath: string): Promise<PathAndTool | null>;
+  abstract BuildContainerAndGetDockerContainerName(): Promise<string>;
 
-  async run(filepath: string): Promise<RunnerResult | null> {
-    let result: RunnerResult = {
-      status: 'pending',
-    };
-    const getresult = await this.getRunFilePathAndTool(filepath);
+  result: RunnerResult = {
+    status: 'pending'
+  };
+  containerName: string;
 
-    if (getresult.error) {
-      result.errors = getresult.error;
-      result.output = getresult.error;
-      result.completedAt = Date.now();
-      result.status = 'completed';
-      return result;
+  async buildContainer(): Promise<boolean> {
+    try {
+      this.containerName = await this.BuildContainerAndGetDockerContainerName();
+      return Promise.resolve(true);
+    } catch (error) {
+      console.log(error);
+
+      this.result.completedAt = Date.now();
+      this.result.status = 'completed';
+      this.result.output = error;
+
+      return Promise.reject(this.result);
     }
+  }
 
-    if (getresult.tool === undefined || null) {
-      return new Promise((resolve, reject) => {
-        const process = spawn(getresult.exeFilepath);
-        const timeout = setTimeout(async () => {
-          try {
-            process.kill();
-            result.completedAt = Date.now();
-            result.output = 'time litmit exceded';
-          } catch (err) {
-            console.log(err);
-          }
-        }, 2 * 1000);
+  async run(input?: string): Promise<RunnerResult | null> {
+    return new Promise((resolve, reject) => {
+      // const process = spawn(getresult.exeFilepath);
 
-        process.stdout.on('data', (data) => {
-          const output = data.toString();
-          result.completedAt = Date.now();
-          result.status = 'completed';
-          result.output = output;
-        });
-        process.stderr.on('data', (data) => {
-          const output = data.toString();
-          result.completedAt = Date.now();
-          result.status = 'completed';
-          result.output = output;
-        });
-
-        process.on('error', (error) => {
-          console.log(error);
-          reject(result);
-        });
-
-        process.on('exit', async (code) => {
-          fs.unlink(getresult.exeFilepath, (err) => {
-            if (err) console.log(err);
-          });
-          fs.unlink(filepath, (err) => {
-            if (err) console.log(err);
-          });
-
-          clearTimeout(timeout);
-          if (code === 0) {
-            resolve(result);
-          }
-          if (code === 1) {
-            reject(result);
-          }
-        });
-
-        // try {
-        //   process.stdin.write(job['input']);
-        // } catch (err) {
-        //   console.log('can not write to stream');
-        // }
-
-        process.stdin.end();
-      });
-    }
-
-    if (getresult.tool) {
-      return new Promise((resolve, reject) => {
-        const process = spawn(getresult.tool, [filepath]);
-        const timeout = setTimeout(async () => {
-          try {
-            process.kill();
-            result.completedAt = Date.now();
-          } catch (err) {
-            console.log(err);
-          }
-        }, 2 * 1000);
-
-        process.stdout.on('data', (data) => {
-          const output = data.toString();
-          result.completedAt = Date.now();
-          result.status = 'completed';
-          result.output = output;
-        });
-        process.stderr.on('data', (data) => {
-          const output = data.toString();
-          result.completedAt = Date.now();
-          result.status = 'completed';
-          result.output = output;
-        });
-
-        process.on('error', (err) => {
+      const process = spawn('docker', ['run', this.containerName]);
+      const timeout = setTimeout(async () => {
+        try {
+          process.kill();
+          this.result.completedAt = Date.now();
+          this.result.output = 'time litmit exceded';
+        } catch (err) {
           console.log(err);
-          reject(result);
-        });
+        }
+      }, 2 * 1000);
 
-        process.on('exit', async (code) => {
-          fs.unlink(getresult.exeFilepath, (err) => {
-            if (err) console.log(err);
-          });
-
-          clearTimeout(timeout);
-          if (code === 0) resolve(result);
-
-          if (code === 1) {
-            reject(result);
-          }
-        });
-
-        // try {
-        //   process.stdin.write(job['input']);
-        // } catch (err) {
-        //   console.log('can not write to stream');
-        // }
-
-        process.stdin.end();
+      process.stdout.on('data', (data) => {
+        const output = data.toString();
+        // console.log(output);
+        this.result.completedAt = Date.now();
+        this.result.status = 'completed';
+        this.result.output = output;
       });
-    }
+      process.stderr.on('data', (data) => {
+        const output = data.toString();
+        // console.log(output);
+        this.result.completedAt = Date.now();
+        this.result.status = 'completed';
+        this.result.output = output;
+      });
+
+      process.on('error', (error) => {
+        const output = error.toString();
+        reject(this.result);
+      });
+
+      process.on('exit', async (code) => {
+        // clearTimeout(timeout);
+        if (code === 0) {
+          resolve(this.result);
+        }
+        if (code === 1) {
+          reject(this.result);
+        }
+      });
+
+      if (input)
+        try {
+          process.stdin.write(input);
+        } catch (err) {
+          console.log('can not write to stream');
+        }
+
+      process.stdin.end();
+    });
   }
 }

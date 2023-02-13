@@ -7,7 +7,6 @@ export interface Job {
   errors: null | string;
   executionTime:number;
   userId:string | null;
-  filepath:string;
   startedAt:Date;
   completedAt:Date;
   output:string;

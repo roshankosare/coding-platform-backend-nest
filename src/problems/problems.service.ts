@@ -1,26 +1,35 @@
 import { Injectable } from '@nestjs/common';
 import { CreateProblemDto } from './dto/create-problem.dto';
 import { UpdateProblemDto } from './dto/update-problem.dto';
+import { Problem } from './entities/problem.entity';
+import { ProblemRepository } from './problems.repository';
 
 @Injectable()
 export class ProblemsService {
-  create(createProblemDto: CreateProblemDto) {
-    return 'This action adds a new problem';
+  constructor(private readonly problemRepository: ProblemRepository) {}
+  async create(createProblemDto: CreateProblemDto) {
+    return await this.problemRepository.create(createProblemDto);
   }
 
-  findAll() {
-    return `This action returns all problems`;
+  async findAll(problemFilterQuery: Partial<Problem>) {
+    return await this.problemRepository.find(problemFilterQuery);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} problem`;
+  async findOne(problemFilterQuery: Partial<Problem>) {
+    return await this.problemRepository.findOne(problemFilterQuery);
   }
 
-  update(id: number, updateProblemDto: UpdateProblemDto) {
-    return `This action updates a #${id} problem`;
+  async update(
+    problemFilterQuery: Partial<Problem>,
+    updateProblemDto: Partial<Problem>,
+  ) {
+    return await this.problemRepository.findOneAndUpdate(
+      problemFilterQuery,
+      updateProblemDto,
+    );
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} problem`;
+  async remove(problemFilterQuery: Partial<Problem>) {
+    return this.problemRepository.findOneAndDelete(problemFilterQuery);
   }
 }

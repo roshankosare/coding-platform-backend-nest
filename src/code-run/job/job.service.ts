@@ -10,9 +10,9 @@ export class JobServie {
   constructor(private readonly jobRepository: JobRepository) {}
 
   async createJob(createJobDto: Partial<Job>): Promise<Job> {
-    const filepath = generateFile(createJobDto.language, createJobDto.code);
+    // const filepath = generateFile(createJobDto.language, createJobDto.code);
     let job: Job;
-    if (filepath) {
+    
       job = {
         createdAt: new Date(),
         jobId: uuid(),
@@ -22,12 +22,11 @@ export class JobServie {
         errors: null,
         executionTime: 0,
         userId: '',
-        filepath: filepath,
         startedAt: null,
         completedAt: null,
         output: '',
       };
-    }
+    
 
     return await this.jobRepository.create(job);
   }
