@@ -1,96 +1,157 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { compare, hash } from 'bcrypt';
 import { HttpResponse } from 'src/common/httpResponse';
 import { UserAuthService } from 'src/user-auth/user-auth.service';
-import { AuthValidationServie } from './auth-validation.service';
+
 import { SignInUserDto } from './dto/sign-in-user.dto';
 import { SignUpUserDto } from './dto/sing-up-user.dto';
+import { ValidateUserService } from './validate.service';
 
 @Injectable()
 export class AuthService {
+  
   constructor(
     private readonly userAuthService: UserAuthService,
-    private readonly authValidationService: AuthValidationServie,
+    private readonly validationService: ValidateUserService,
+    private readonly jwtService:JwtService
   ) {}
 
-  async signUp(signUpUserDto: SignUpUserDto) {
-    const errors = this.authValidationService.singUpValidation(signUpUserDto);
-    if (errors.length > 0)
-      return new HttpResponse({
-        success: false,
-        message: 'incomplete data provided',
-        statusCode: HttpStatus.BAD_REQUEST,
-        data: errors,
-      });
-    const { email, password, username } = signUpUserDto;
+  async signUp(userDto:SignUpUserDto) {
+    const { email, password, username } = userDto;
+    const errors = this.validationService.validateCreateUserDto(userDto);
+    
+    if (errors.length > 0){
 
-    const isUserExists = await this.userAuthService.findOne({ email: email });
-    if (isUserExists)
-      return new HttpResponse({
-        success: false,
-        message: 'email is already taken',
-        statusCode: HttpStatus.BAD_REQUEST,
-      });
+      return Promise.reject(
+        new HttpResponse({
+          success: false,
+          message: 'invalid parameters',
+          statusCode: HttpStatus.BAD_REQUEST,
+          data: {
+            authenticated: false,
+            error: errors,
+          },
+        }),
+      );
+
+    }
+     
+
+    if (await this.userAuthService.findOne({ email:email }))
+      return Promise.reject(
+        new HttpResponse({
+          success: false,
+          message: 'email is already taken',
+          statusCode: HttpStatus.BAD_REQUEST,
+          data: {
+            authencated: false,
+            errors: ['email is already registered'],
+          },
+        }),
+      );
 
     const hashedPassword = await hash(password, 12);
+
     const user = await this.userAuthService.create({
-      email: email,
-      username: username,
+      username,
+      email,
       password: hashedPassword,
     });
 
-    if (user) {
-      const { password, ...otherinfo } = user;
-      return new HttpResponse({
-        success: true,
-        message: 'Account created..',
-        statusCode: HttpStatus.CREATED,
-        data: { otherinfo },
-      });
-    }
+    const userInfo = {
+      username: user.username,
+      email: user.email,
+    };
 
-    //database error
-    return new HttpResponse({
-      success: false,
-      message: 'Server Error',
-      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+    const payload = {
+      userId: user.userId,
+      username: user.username,
+      email: user.email,
+    };
+    const access_token = this.jwtService.sign(payload);
+
+    const response = new HttpResponse({
+      success: true,
+      message: 'sign up successful',
+      statusCode: HttpStatus.CREATED,
+      data: {
+        autheticated: true,
+        user: userInfo,
+      },
     });
+
+    return Promise.resolve({ response, access_token });
   }
 
-  async signIn(signInUserDto: SignInUserDto) {
-    const errors = this.authValidationService.singInValidation(signInUserDto);
+  async signIn(userDto: SignInUserDto) {
+    const { email, password } = userDto;
+
+    const errors = this.validationService.validateSignInUserDto(userDto);
     if (errors.length > 0)
-      return new HttpResponse({
-        success: false,
-        message: 'incomplete data provided',
-        statusCode: HttpStatus.BAD_REQUEST,
-        data: errors,
-      });
+      return Promise.reject(
+        new HttpResponse({
+          success: false,
+          message: 'invalid parameters',
+          statusCode: HttpStatus.UNAUTHORIZED,
+          data: {
+            authenticated: false,
+            error: errors,
+          },
+        }),
+      );
 
-    const { email, password } = signInUserDto;
+    const user = await this.userAuthService.findOne({ email:email });
+   
 
-    const user = await this.userAuthService.findOne({ email: email });
+    
+
     if (!user)
-      return new HttpResponse({
-        success: false,
-        message: 'Email is not registered',
-        statusCode: HttpStatus.BAD_REQUEST,
-      });
+      return Promise.reject(
+        new HttpResponse({
+          success: false,
+          message: 'email is incorrect ',
+          statusCode: HttpStatus.UNAUTHORIZED,
+          data: {
+            authenticated: false,
+            errors: ['incorrect email id'],
+          },
+        }),
+      );
 
-    const isCorrectPassword = await compare(password, user.password);
-    if (!isCorrectPassword)
-      return new HttpResponse({
-        success: false,
-        message: 'incorrect password',
-        statusCode: HttpStatus.BAD_REQUEST,
-      });
+    if (!(await compare(password, user.password)))
+      return Promise.reject(
+        new HttpResponse({
+          success: false,
+          message: 'incorrect password ',
+          statusCode: HttpStatus.UNAUTHORIZED,
+          data: {
+            authenticated: false,
+            errors: ['inccorect password'],
+          },
+        }),
+      );
+      const userInfo = {
+        username: user.username,
+        email: user.email,
+      };
 
-    delete user.password;
-    return new HttpResponse({
+    const payload = {
+      userId: user.userId,
+      username: user.username,
+      email: user.email,
+    };
+    const access_token = this.jwtService.sign(payload);
+
+    const response = new HttpResponse({
       success: true,
-      message: 'Authentication success',
-      statusCode: HttpStatus.CREATED,
-      data: user,
+      message: 'sign In successful ',
+      statusCode: HttpStatus.OK,
+      data: {
+        authenticated: true,
+        user: userInfo,
+      },
     });
+    return Promise.resolve({ response, access_token });
   }
 }

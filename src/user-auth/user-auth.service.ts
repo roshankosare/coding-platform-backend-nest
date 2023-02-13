@@ -23,12 +23,8 @@ export class UserAuthService {
   }
 
   async findOne(params: Partial<UserAuth>): Promise<UserAuth> {
-    const { email, username } = params;
-    let query: any;
-    if (email) query.email = email;
-
-    if (username) query.username = username;
-    return await this.userAuthRespository.findOne(query);
+    
+    return await this.userAuthRespository.findOne(params);
   }
 
   async update(

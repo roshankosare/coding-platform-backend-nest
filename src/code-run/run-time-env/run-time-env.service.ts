@@ -14,7 +14,6 @@ export class RunTimeEnv {
 
       return result;
     } catch (result) {
-       
       return result;
     }
   }

@@ -3,12 +3,17 @@ import { HttpStatus } from "@nestjs/common";
 export class HttpResponse {
   success: boolean;
   message: string;
-  statusCode: HttpStatus;
+  statusCode: number;
   data: {};
-  constructor({ statusCode = HttpStatus.ACCEPTED, message = 'ok', success = true, data = {} }) {
-    this.data = data;
-    this.statusCode = statusCode;
-    this.message = message;
-    this.success = success;
+  constructor(httpresponse: {
+    success?: boolean;
+    message?: string;
+    data?: {};
+    statusCode?:number;
+  }) {
+    this.success = httpresponse.success || false;
+    this.message = httpresponse.message || 'ok';
+    this.data = httpresponse.data || {};
+    this.statusCode = httpresponse.statusCode || 200;
   }
 }

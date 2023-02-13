@@ -11,6 +11,8 @@ import { CodeRunModule } from './code-run/code-run.module';
 import { BullModule } from '@nestjs/bull';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ProblemjobModule } from './problemjob/problemjob.module';
+import { JwtModule } from '@nestjs/jwt';
+import { AuthencationModule } from './jwt/authentication.module';
 
 @Module({
   imports: [
@@ -28,7 +30,9 @@ import { ProblemjobModule } from './problemjob/problemjob.module';
       },
     }),
     MongooseModule.forRoot('mongodb://localhost/online-code-compiler'),
-    ProblemjobModule
+    ProblemjobModule,
+    AuthencationModule
+    
   ],
   controllers: [AppController],
   providers: [AppService],
