@@ -46,7 +46,9 @@ export class AuthService {
           statusCode: HttpStatus.BAD_REQUEST,
           data: {
             authencated: false,
-            errors: ['email is already registered'],
+            errors: {
+              emailError:"email is already taken"
+            },
           },
         }),
       );
@@ -114,7 +116,9 @@ export class AuthService {
           statusCode: HttpStatus.UNAUTHORIZED,
           data: {
             authenticated: false,
-            errors: ['incorrect email id'],
+            errors: {
+              emailError:"incorrect email id"
+            },
           },
         }),
       );
@@ -127,7 +131,9 @@ export class AuthService {
           statusCode: HttpStatus.UNAUTHORIZED,
           data: {
             authenticated: false,
-            errors: ['inccorect password'],
+            errors: {
+              passwordError:"incorrect password"
+            },
           },
         }),
       );
