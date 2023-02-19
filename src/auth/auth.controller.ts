@@ -65,6 +65,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get("/auth")
   async authenticateUser(@Req() req: Request, @Res() res: Response) {
+   
     
     // const user = <CurrentUser>req.user;
     // const userInfo = {
@@ -72,6 +73,7 @@ export class AuthController {
     //   email:user.email
 
     // }
+   
     const response = new HttpResponse({
       success: true,
       message: 'legit User',
@@ -94,6 +96,7 @@ export class AuthController {
     //   email:user.email
 
     // }
+    
     const response = new HttpResponse({
       success: true,
       message: 'logged out ..',
