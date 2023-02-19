@@ -10,6 +10,7 @@ import { PostDocument } from './entities/post.entity.mongo';
 import { CommentService } from './entities/commnet/commnet.service';
 import { CreateCommentDto } from './entities/commnet/dto/create-comment.dto';
 import { CommentEntity } from './entities/commnet/entity/comment.entity';
+// import postAgrregatePipeline from './post-mogo-queries/post.filterQuery';
 
 @Injectable()
 export class PostService {
@@ -58,20 +59,51 @@ export class PostService {
   }
 
   async findOne(postFilterQuery: Partial<Post>): Promise<HttpResponse> {
-    const post = await this.postRespository.findOne(postFilterQuery);
+    const post = await this.postRespository.findWithAggrigattion([
+      {
+        $match: { postId: postFilterQuery.postId },
+      },
+      {
+        $lookup: {
+          from: 'comments',
+          localField: 'postId',
+          foreignField: 'postId',
+          as: 'comments',
+          pipeline: [
+            {
+              $lookup: {
+                from: 'users',
+                as: 'user',
+                localField: 'auther',
+                foreignField: 'userId',
+                pipeline: [
+                  {
+                    $project: { username: 1 },
+                  },
+                ],
+              },
+            },
+
+            {
+              $unwind: '$user',
+            },
+          ],
+        },
+      },
+    ]);
     if (!post)
       return new HttpResponse({
         success: false,
         message: 'can not find post',
         statusCode: HttpStatus.NOT_FOUND,
-        data: post,
+        data: {}
       });
 
     return new HttpResponse({
       success: true,
       message: 'posts fetched ',
       statusCode: HttpStatus.OK,
-      data: post,
+      data: post[0],
     });
   }
 
@@ -129,21 +161,22 @@ export class PostService {
   ): Promise<HttpResponse> {
     const commentDoc = await this.commentService.create(createCommentDto);
 
-    const post  = await this.postRespository.findOne({postId:createCommentDto.postId});
-    if(!post)
-    return new HttpResponse({
-      success: false,
-      message: 'invalid post Id ',
-      statusCode: HttpStatus.BAD_REQUEST,
-      
+    const post = await this.postRespository.findOne({
+      postId: createCommentDto.postId,
     });
+    if (!post)
+      return new HttpResponse({
+        success: false,
+        message: 'invalid post Id ',
+        statusCode: HttpStatus.BAD_REQUEST,
+      });
 
     if (commentDoc) {
       // let updatePost: UpdateQuery<PostDocument>;
       // updatePost.$push = {comments:commentDoc.commentId};
       await this.postRespository.findOneAndUpdate(
         { postId: createCommentDto.postId },
-        {$push:{comments:commentDoc.commentId}}
+        { $push: { comments: commentDoc.commentId } },
       );
       return new HttpResponse({
         success: true,
@@ -158,6 +191,5 @@ export class PostService {
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       data: commentDoc,
     });
-
   }
 }

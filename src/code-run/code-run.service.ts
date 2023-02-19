@@ -16,7 +16,7 @@ export class CodeRunService {
   ) {}
 
   async runCodeAll(codeRunDto: CreateCodeRunDto): Promise<HttpResponse> {
-    const errors = this.codeRunValiidationServie.validateRunCodeDto(codeRunDto);
+    const errors:string[] = this.codeRunValiidationServie.validateRunCodeDto(codeRunDto);
     console.log(errors)
 
     // if (errors.length > 0)

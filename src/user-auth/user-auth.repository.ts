@@ -4,13 +4,13 @@ import { Document, FilterQuery, Model, Types, UpdateQuery } from 'mongoose';
 import { EntityAbstractRepositoryMongo } from 'src/database/entity-abstract.respository';
 import {
   UserAuthDocument,
-  UserAuthMongoEntity,
+  Users,
 } from './entities/user-auth-mongo.entity';
 
 @Injectable()
 export class UserAuthRepository extends EntityAbstractRepositoryMongo<UserAuthDocument> {
   constructor(
-    @InjectModel(UserAuthMongoEntity.name)
+    @InjectModel(Users.name)
     userAuthModel: Model<UserAuthDocument>,
   ) {
     super(userAuthModel);

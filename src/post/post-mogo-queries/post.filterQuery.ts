@@ -1,3 +1,14 @@
-import { Aggregate, FilterQuery } from "mongoose";
-import { PostDocument } from "../entities/post.entity.mongo";
+import { PipelineStage } from 'mongoose';
 
+// let postAgrregatePipeline: PipelineStage[];
+
+// postAgrregatePipeline.push({
+//   $lookup: {
+//     from: 'comments',
+//     localField: 'postId',
+//     foreignField: 'postId',
+//     as: 'comments',
+//   },
+// });
+
+// export default postAgrregatePipeline

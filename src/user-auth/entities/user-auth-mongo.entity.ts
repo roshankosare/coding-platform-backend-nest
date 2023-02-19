@@ -3,10 +3,10 @@ import { SchemaFactory } from '@nestjs/mongoose/dist';
 import { HydratedDocument } from 'mongoose';
 import { UserAuth } from './user-auth.entity';
 
-export type UserAuthDocument = HydratedDocument<UserAuthMongoEntity>;
+export type UserAuthDocument = HydratedDocument<Users>;
 
 @Schema()
-export class UserAuthMongoEntity implements UserAuth {
+export class Users implements UserAuth {
   @Prop()
   email: string;
 
@@ -20,4 +20,4 @@ export class UserAuthMongoEntity implements UserAuth {
   username: string;
 }
 
-export const UserAuthSchema = SchemaFactory.createForClass(UserAuthMongoEntity);
+export const UserAuthSchema = SchemaFactory.createForClass(Users);
