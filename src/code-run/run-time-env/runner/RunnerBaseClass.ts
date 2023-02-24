@@ -1,4 +1,5 @@
-import { spawn } from 'child_process';
+import { exec, spawn } from 'child_process';
+import path from 'path';
 
 import { RunnerResult } from '../runner-result.type';
 
@@ -6,7 +7,7 @@ export abstract class RunnerBaseClass {
   abstract BuildContainerAndGetDockerContainerName(): Promise<string>;
 
   result: RunnerResult = {
-    status: 'pending'
+    status: 'pending',
   };
   containerName: string;
 
@@ -26,10 +27,13 @@ export abstract class RunnerBaseClass {
   }
 
   async run(input?: string): Promise<RunnerResult | null> {
+   
     return new Promise((resolve, reject) => {
       // const process = spawn(getresult.exeFilepath);
+     
 
-      const process = spawn('docker', ['run', this.containerName]);
+      const process = spawn('docker', ['run',"-i", this.containerName,]);
+      // const process = exec(`docker run -it ${this.containerName}`);
       const timeout = setTimeout(async () => {
         try {
           process.kill();
@@ -38,24 +42,25 @@ export abstract class RunnerBaseClass {
         } catch (err) {
           console.log(err);
         }
-      }, 2 * 1000);
+      }, 3 * 1000);
 
       process.stdout.on('data', (data) => {
         const output = data.toString();
-        // console.log(output);
+        console.log(output);
         this.result.completedAt = Date.now();
         this.result.status = 'completed';
         this.result.output = output;
       });
       process.stderr.on('data', (data) => {
         const output = data.toString();
-        // console.log(output);
+        console.log(output);
         this.result.completedAt = Date.now();
         this.result.status = 'completed';
         this.result.output = output;
       });
 
       process.on('error', (error) => {
+        console.log(error)
         const output = error.toString();
         reject(this.result);
       });
@@ -70,12 +75,13 @@ export abstract class RunnerBaseClass {
         }
       });
 
-      if (input)
+      if (input) {
         try {
           process.stdin.write(input);
         } catch (err) {
           console.log('can not write to stream');
         }
+      }
 
       process.stdin.end();
     });

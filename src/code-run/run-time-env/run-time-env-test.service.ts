@@ -1,6 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { RunnerFactory } from './RunnerFactory';
 
+type TestResult = {
+  input: string;
+  expectedOutput: string;
+  outputed: string;
+  status: string;
+};
+
 @Injectable()
 export class RunTimeEnvTest {
   codeRunner: RunnerFactory;
@@ -9,33 +16,39 @@ export class RunTimeEnvTest {
     testCaseArray,
   }: {
     language: string;
-    testCaseArray: [any];
+    testCaseArray:any [];
   }) {
+    
+  
     this.codeRunner = new RunnerFactory();
     const runner = this.codeRunner.CreateRunner(language);
 
     try {
-      let executionResult: any;
+      const executionResult: TestResult[] = [];
       await runner.buildContainer();
-      testCaseArray.every(async (testCase) => {
-        let testResult: any;
-        const result = await runner.run();
-        if (result.output !== testCase.output) {
-          testResult.input = testCase.input;
-          testResult.expectedOutput = testCase.output;
-          testResult.outputed = result.output;
-          testResult.status = 'passed';
-          executionResult.push(testResult);
-          return;
-        }
-        testResult.input = testCase.input;
-        testResult.expectedOutput = testCase.output;
-        testResult.outputed = result.output;
-        testResult.status = 'passed';
-        executionResult.push(testResult);
-        return;
-      });
+      for (let i = 0; i < testCaseArray.length; i++) {
+       
 
+        const result = await runner.run(testCaseArray[i].input);
+       
+      
+        if (result.output !== testCaseArray[i].output) {
+          executionResult.push({
+            input: testCaseArray[i].input,
+            outputed: result.output,
+            expectedOutput: testCaseArray[i].output,
+            status: 'fail',
+          });
+        
+          continue;
+        }
+        executionResult.push({
+          input: testCaseArray[i].input,
+          outputed: result.output,
+          expectedOutput: testCaseArray[i].output,
+          status: 'pass',
+        });
+      }
       return executionResult;
     } catch (result) {
       return result;

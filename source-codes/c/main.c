@@ -1,5 +1,7 @@
 #include<stdio.h>
   int main(){ 
-  printf("Hello world");
+   char name[20];
+     std::cin >> name;
+     std::cout <<"hello "<<name;
   return 0;
 }

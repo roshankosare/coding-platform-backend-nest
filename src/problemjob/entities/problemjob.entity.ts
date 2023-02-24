@@ -11,7 +11,7 @@ export interface ProblemJob{
    
     startedAt:Date;
     completedAt:Date;
-    testCasesResult:[]
+    testCasesResult:any[]
 
 
 }

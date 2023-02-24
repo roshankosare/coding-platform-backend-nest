@@ -2,8 +2,9 @@ import { TestCase } from "../entities/problem.entity";
 
 
 export class CreateProblemDto {
+    autherId?:string;
     title:string;
     description:string;
-    sampleInputTest:TestCase;
+    sampleTest:TestCase;
     testCases:[TestCase];
 }

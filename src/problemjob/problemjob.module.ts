@@ -18,12 +18,13 @@ import { ProblemJobRepository } from './problem-job.repository';
       { name: ProblemJobs.name, schema: ProblemJobSchema },
     ]),
     ProblemsModule,
-    BullModule.registerQueue({
-      name: 'problemJobs',
-    }),
+    // BullModule.registerQueue({
+    //   name: 'problemJobs',
+    // }),
     RunTimeEnvModule
   ],
   controllers: [ProblemjobController],
   providers: [ProblemjobService,ProblemJobConsumer,ProblemJobRepository],
+  exports:[ProblemjobService,ProblemjobModule]
 })
 export class ProblemjobModule {}

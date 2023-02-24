@@ -8,6 +8,8 @@ export type  ProblemDocument = HydratedDocument<Problems>;
 @Schema()
 export class Problems implements Problem {
   @Prop()
+  autherId: string;
+  @Prop()
   problemId: string;
   @Prop()
   title: string;
@@ -18,7 +20,7 @@ export class Problems implements Problem {
   @Prop()
   dislikes: number;
   @Prop({type:"Object"})
-  smapleTestCase: TestCase;
+  sampleTestCase: TestCase;
   @Prop()
   testCase: [TestCase];
 }

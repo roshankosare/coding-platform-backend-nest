@@ -1,5 +1,7 @@
 #include<iostream>
     int main(){ 
-    std::cout << "Hello World!";
+    char name[20];
+     std::cin >> name;
+     std::cout <<"hello "<<name;
     return 0;
     }

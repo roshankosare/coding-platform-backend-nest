@@ -4,10 +4,11 @@ export type TestCase = {
 };
 
 export interface Problem {
+  autherId:string;
   problemId: string;
   title: string;
   description: string;
-  smapleTestCase: TestCase;
+  sampleTestCase: TestCase;
   testCase: [TestCase];
   likes: number;
   dislikes: number;

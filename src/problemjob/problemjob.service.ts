@@ -4,14 +4,14 @@ import { UpdateProblemjobDto } from './dto/update-problemjob.dto';
 import { ProblemJob } from './entities/problemjob.entity';
 import { ProblemJobRepository } from './problem-job.repository';
 import { v4 as uuid } from 'uuid';
-import { ProblemJobConsumer } from './problem-job.consumer';
+// import { ProblemJobConsumer } from './problem-job.consumer';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 
 @Injectable()
 export class ProblemjobService {
   constructor(
-    @InjectQueue('problemJobs') private readonly jobQueue: Queue,
+    // @InjectQueue('problemJobs') private readonly jobQueue: Queue,
     private readonly problemJobRepository: ProblemJobRepository,
     
   ) {}
@@ -35,7 +35,7 @@ export class ProblemjobService {
     const newJob = await this.problemJobRepository.create(job);
     if (!newJob) return null;
 
-    this.jobQueue.add({ jobId: newJob.jobId });
+   
     return newJob;
   }
 

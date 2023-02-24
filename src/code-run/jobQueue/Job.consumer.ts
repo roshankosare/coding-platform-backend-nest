@@ -18,8 +18,8 @@ export class JobConsumer {
     const runnerResult = await this.runTimeEnv.run({
       language: currentJob.language,
     });
-   
 
+  
     await this.jobService.findOneAndUpdate(
       { jobId: job.data.jobId },
       { jobStatus: 'completed', output: runnerResult.output },

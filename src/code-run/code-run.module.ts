@@ -8,14 +8,18 @@ import { JobConsumer } from './jobQueue/Job.consumer';
 import { CodeRunValidationService } from './run-code-validation.service';
 import { RunTimeEnvTest } from './run-time-env/run-time-env-test.service';
 import { RunTimeEnvModule } from './run-time-env/run-time-env.module';
+import { ProblemjobModule } from 'src/problemjob/problemjob.module';
 
 @Module({
   imports: [
     JobModule,
     BullModule.registerQueue({
       name: 'jobs',
+    },{
+      name:"problemJobs"
     }),
-    RunTimeEnvModule
+    RunTimeEnvModule,
+    ProblemjobModule
   ],
   controllers: [CodeRunController],
   providers: [CodeRunService, RunTimeEnv,JobConsumer,

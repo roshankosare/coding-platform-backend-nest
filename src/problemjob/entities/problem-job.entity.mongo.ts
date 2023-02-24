@@ -28,7 +28,7 @@ export class ProblemJobs implements ProblemJob {
   completedAt: Date;
 
   @Prop()
-  testCasesResult: [];
+  testCasesResult: any[];
 
   @Prop()
   userId: string;
